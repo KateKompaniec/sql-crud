@@ -3,8 +3,6 @@ const router = require('./routes')
 const app = express()
 const mountRoutes = require('./routes')
 
-
-
 app.use(express.json())
 app.use(router);
 

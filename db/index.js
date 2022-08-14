@@ -6,47 +6,60 @@ const pool = new Pool({
   password: 'intern',
 })
 
-const getTasks = async (req, res) => {
-  const id = parseInt(req.query.listID)
-  if(!id){
-    const { rows } = await pool.query('SELECT * FROM items')
-    res.send(rows)
-  }
-  else{
-    const { rows } = await pool.query('SELECT * FROM items WHERE listID = $1', [id])
-    res.send(rows)
-  }
+
+function getAllTasks() {
+  return pool.query('SELECT * FROM tasks').then((result) => result.rows)
 }
 
-const createTask = async (req, res) => {
-  const task = { 
-    title: req.query.title,
-    listID: req.query.listID,
-    id: req.query.id
-  }
-  await pool.query('INSERT INTO items (title, listID, id) VALUES ($1, $2, $3)', [task.title, task.listID, task.id])
-    res.send(`Task added`)
+
+function createTask() {
+  return pool.query('INSERT INTO tasks (title, listID, description, done, due_date) VALUES ($1, $2, $3, $4, $5) RETURNING *', task)
+    .then((result) => result.rows[0])
+
 }
 
-const updateTask = async (req, res) => {
-  const task = { 
-    title: req.query.title,
-    listID: req.query.listID,
-    id: req.query.id
-  }
-  await pool.query('UPDATE items SET title = $1, listid = $2 WHERE id = $3', [task.title, task.listID, task.id])
-  res.send(`Task modified`)
+function updateTask(task, id) {
+  return pool.query('UPDATE tasks SET title = $1, description = $2, done=$3 WHERE id = $4 RETURNING *', [task.title, task.description, task.done, id])
+    .then((result) => result.rows[0])
 }
 
-const deleteTask = async (req, res) => {
-  const id = parseInt(req.query.id)
-  await pool.query('DELETE FROM items WHERE id = $1', [id])
-    res.send(`Task deleted`)
+function deleteTask(id) {
+
+  return pool.query('DELETE FROM tasks WHERE id = $1 RETURNING *', [id])
+    .then((result) => result.rows[0])
 }
 
+function getCountofTasksOnDueDate() {
+  return pool.query('SELECT COUNT(*)::INT  AS today FROM tasks WHERE due_date = \'2022-08-11\' AND done=false ')
+    .then((result) => result.rows[0].today)
+
+}
+function getListsTasksUndone() {
+  return pool.query('SELECT lists.id, lists.list_name, COUNT(tasks.done=false OR null)::INT AS undone FROM tasks RIGHT JOIN lists ON tasks.list_id = lists.id  GROUP BY lists.id')
+    .then((result) => result.rows)
+}
+
+function getCollectionToday() {
+  return pool.query('SELECT *, lists.list_name  FROM tasks LEFT JOIN lists ON lists.id=list_id WHERE due_date = DATE(now())')
+    .then((result) => result.rows)
+}
+
+function getListUndone(listid, done) {
+  return pool.query('SELECT * FROM tasks WHERE list_id = $1 AND done = $2', [listid, done]).then((result) => result.rows)
+
+}
+
+function getTaskListDone(listid, all) {
+  return pool.query("SELECT * FROM tasks WHERE list_id=$1", [listid]).then((result) => result.rows)
+}
 module.exports = {
-  getTasks,
+  getAllTasks,
   createTask,
   updateTask,
-  deleteTask
+  deleteTask,
+  getCountofTasksOnDueDate,
+  getListsTasksUndone,
+  getCollectionToday,
+  getListUndone,
+  getTaskListDone
 }
