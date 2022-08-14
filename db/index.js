@@ -40,12 +40,14 @@ function getListsTasksUndone() {
 }
 
 function getCollectionToday() {
-  return pool.query('SELECT *, lists.list_name  FROM tasks LEFT JOIN lists ON lists.id=list_id WHERE due_date = DATE(now())')
-    .then((result) => result.rows)
+  return pool.query('SELECT *, lists.list_name  FROM tasks LEFT JOIN lists ON lists.id=list_id WHERE due_date = \'2022-08-11\'')
+    .then((result) => result.rows.map(({ id, title, description, due_date, done, list_name, list_id }) => {
+      return { id, title, description, due_date, done, list: { list_id,  list_name } }
+    }))
 }
 
-function getListUndone(listid, done) {
-  return pool.query('SELECT * FROM tasks WHERE list_id = $1 AND done = $2', [listid, done]).then((result) => result.rows)
+function getLists(listid, done) {
+  return pool.query('SELECT * FROM tasks WHERE list_id = $1 AND done = false', [listid]).then((result) => result.rows)
 
 }
 
@@ -60,6 +62,6 @@ module.exports = {
   getCountofTasksOnDueDate,
   getListsTasksUndone,
   getCollectionToday,
-  getListUndone,
+  getListUndone: getLists,
   getTaskListDone
 }

@@ -31,16 +31,16 @@ function getDashboard(req,res){
 }
 
 function getCollectionToday(req,res){
-    db.getCollectionToday().then((result =>res.send(result)))
+    db.getCollectionToday().then((result =>res.json(result)))
 }
 
 function getTaskList(req,res){
     const listid = parseInt(req.params.listid);
     const all =req.query.all;
 if (!all) {
-  db.getListUndone(listid, 'true').then((result)=> res.send(result))
+  db.getListUndone(listid).then((result)=> res.send(result))
 } else {
- db.getListUndone(listid, 'false' ).then((result)=> res.send(result))
+ db.getTaskListDone(listid ).then((result)=> res.send(result))
 }
 }
 module.exports = router
