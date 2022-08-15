@@ -5,13 +5,15 @@ const router = express.Router()
 
 router.get('/dashboard',getDashboard)
 router.get('/collection/today', getCollectionToday)
-//router.get('/lists/:listid/tasks', getTaskList)  
-router.get('/lists/:id/tasks',getTasksByList)
+router.get('/lists/:listid/tasks', getTaskList)  
+//router.get('/lists/:id/tasks',getTasksByList)
 router.get('/tasks',getAllTasks)
+router.post('/tasks',createTask)
+router.put('/tasks/:id',updateTask)
 
 
 function getTasksByList(req,res){
-    const id = parseInt(req.params.id)
+    const id = req.params.id;
     db.getTasks_List(id).then((result)=> res.json(result))  
 }
 
@@ -44,14 +46,14 @@ function getDashboard(req,res){
 function getCollectionToday(req,res){
     db.getCollectionToday().then((result =>res.json(result)))
 }
-/*
+
 function getTaskList(req,res){
-    const listid = parseInt(req.params.listid);
+    const listid = req.params.listid;
     const all =req.query.all;
 if (!all) {
-  db.getListUndone(listid).then((result)=> res.send(result))
+    db.getLists(listid).then(result =>res.json(result))
 } else {
- db.getTaskListDone(listid ).then((result)=> res.send(result))
+    db.getTasks_List(listid).then(result =>res.json(result));
 }
-}  */
+}  
 module.exports = router
