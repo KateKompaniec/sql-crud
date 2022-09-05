@@ -1,14 +1,4 @@
-/* const pg = require("knex")({
-  client: "pg",
-  connection: {
-    port: 5432,
-    host : '127.0.0.1',
-    user : 'todolist_app',
-    password : 'intern',
-    database : 'todolist'
-  },
-  pool: { min: 0, max: 7 }
-}); */
+
 const knex = require('knex')({
   client: 'pg',
   connection: {
@@ -30,22 +20,31 @@ function getTasks_List(listId) {
 
 
 function createTask(task) {
-  return knex("tasks").insert(
+  if(task.due_date==""){
+    task.due_date=null
+  }
+   return knex("tasks").insert(
     { 'title': task.title,
     'list_id': task.listId, 
     'description': task.description,
     'done': task.done ,
     'due_date': task.due_date
-  }
-  ).returning('*');
+  }).returning("*");
+  
+}
+
+function deleteTask(id){
+ return knex('tasks')
+ .where('id', id)
+ .del().returning('*');
 
 }
 
-function updateTask(task, id) {
-  return knex("tasks").where("id", id).update(task).returning('*');
+function updateTask(done, id) {
+  return knex("tasks").where("id", id).update("done",!done).returning('*');
 }
 
-function getCountofTasksOnDueDate() {
+/* function getCountofTasksOnDueDate() {
   return knex("tasks").where('due_date', 'now()')
   .andWhere('done', false).count({today:'*'}).then(result=>parseInt(result[0].today));
 
@@ -72,7 +71,7 @@ function getCollectionToday() {
 function getLists(listid) {
   return knex("tasks").where("list_id", listid).andWhere("done", false);
   //pool.query('SELECT * FROM tasks WHERE list_id = $1 AND done = false', [listid]).then((result) => result.rows)
-}
+} */
 
 
 module.exports = {
@@ -80,8 +79,9 @@ module.exports = {
   getTasks_List,
   createTask,
   updateTask,
-  getCountofTasksOnDueDate,
+  /* getCountofTasksOnDueDate,
   getLists,
   getCollectionToday,
-  getListsTasksUndone
+  getListsTasksUndone, */
+  deleteTask
 }
