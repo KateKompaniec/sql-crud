@@ -14,10 +14,15 @@ function getTasks() {
   return knex("tasks").select('*');
 }
 
+
 function getTasks_List(listId) {
   return knex("tasks").select('*').where('list_id', listId);
 }
-
+function getList(){
+  return knex('lists')
+  .join('tasks', 'lists.id', '=', 'tasks.list_id')
+  .select("*")
+}
 
 function createTask(task) {
   if(task.due_date==""){
@@ -57,17 +62,18 @@ function getListsTasksUndone() {
   //pool.query('SELECT lists.id, lists.list_name, COUNT(tasks.done=false OR null)::INT AS undone FROM tasks RIGHT JOIN lists ON tasks.list_id = lists.id  GROUP BY lists.id')
 
 }
+*/
 
 function getCollectionToday() {
   return knex("tasks").select('*','lists.list_name').leftJoin('lists', function() {
     this
-      .on('lists.id', '=', 'list_id')}).where('due_date', '2022-08-11').then((result) => result.map(({ id, title, description, due_date, done, list_name, list_id }) => {
+      .on('lists.id', '=', 'list_id')}).then((result) => result.map(({ id, title, description, due_date, done, list_name, list_id }) => {
         return { id, title, description, due_date, done, list: { list_id, list_name } }
       }))
   //pool.query('SELECT *, lists.list_name  FROM tasks LEFT JOIN lists ON lists.id=list_id WHERE due_date = \'2022-08-11\'')
     
 }
-
+/*
 function getLists(listid) {
   return knex("tasks").where("list_id", listid).andWhere("done", false);
   //pool.query('SELECT * FROM tasks WHERE list_id = $1 AND done = false', [listid]).then((result) => result.rows)
@@ -81,7 +87,8 @@ module.exports = {
   updateTask,
   /* getCountofTasksOnDueDate,
   getLists,
-  getCollectionToday,
   getListsTasksUndone, */
-  deleteTask
+  deleteTask,
+  getList,
+  getCollectionToday,
 }
